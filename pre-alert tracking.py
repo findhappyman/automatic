@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-import easygui as g
 import xlwings as xw
 import numpy as np
 import os
