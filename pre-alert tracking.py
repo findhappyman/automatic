@@ -126,5 +126,5 @@ if __name__ == '__main__':
         gap = workdays(Air_date, dt.datetime.today())
         if gap > air_limit:
             air_invoice.append(i)
-    send_mail(sea_invoice,sea_mail,sea_subject,sea_name)        #发邮件
-    send_mail(air_invoice,air_mail,air_subject,air_name)
+    send_mail(sea_invoice,sea_mail,sea_subject,sea_name)        #发海运邮件
+    send_mail(air_invoice,air_mail,air_subject,air_name)        #发空运邮件
