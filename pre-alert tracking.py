@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import xlwings as xw
-import numpy as np
 import os
 import pandas as pd
 import datetime as dt
@@ -10,15 +9,15 @@ import time
 import win32com.client as win32
 import pythoncom
 from dateutil import rrule
-import datetime
 import easygui as eg
 
 def get_file_name(dirpath=''):
     file_name = []
     list1 = os.listdir(dirpath)
-    for i in range(0, len(list1)):
-        #if os.path.isfile(list1[i]):
-        file_name.append(os.path.join(dirpath, list1[i]))
+    for i in range(len(list1)):
+        if os.path.isfile(os.path.join(dirpath,list1[i])):
+            if '~' not in list1[i]:
+                file_name.append(os.path.join(dirpath, list1[i]))
     return file_name
 
 def find_invoice_e9p(dirpath):
@@ -27,16 +26,15 @@ def find_invoice_e9p(dirpath):
     app.screen_updating = False
     filepath = os.path.join(dirpath, 'zf31.xls')
     wb = app.books.open(filepath)
-    E9P_finding_invoice = wb.sheets[0].range('D5:D2000').value
-    E9P_finding_date = wb.sheets[0].range('A5:A2000').value
-    E9P_finding_method = wb.sheets[0].range('B5:B2000').value
+    E9P_finding_invoice = wb.sheets['zf31'].range('D5:D2000').value
+    E9P_finding_date = wb.sheets['zf31'].range('A5:A2000').value
+    E9P_finding_method = wb.sheets['zf31'].range('B5:B2000').value
     df = pd.DataFrame({"Invoice": E9P_finding_invoice,
                        'Date': E9P_finding_date,
                        'Method': E9P_finding_method})
     df = df.dropna()
     wb.save()
     wb.close()
-    time.sleep(3)
     return df
 
 def find_invoice_inbound(filepath):
@@ -44,58 +42,48 @@ def find_invoice_inbound(filepath):
     app.display_alerts = False
     app.screen_updating = False
     wb = app.books.open(filepath)
-    inbound_finding = list(filter(None,wb.sheets[0].range('B2:B2000').value))+list(filter(\
-        None,wb.sheets[1].range('A2:A2000').value))
+    inbound_finding = list(filter(None,wb.sheets['IN PROCESS'].range('B2:B2000').value))+list(filter(\
+        None,wb.sheets['VW SP'].range('A2:A2000').value))
     wb.save()
     wb.close()
-    time.sleep(3)
     return inbound_finding
 
-
-def workdays(start, end, holidays=0, days_off=None):
-    if days_off is None:
-        days_off = 5, 6
-    workdays = [x for x in range(7) if x not in days_off]
-    days = rrule.rrule(rrule.DAILY, dtstart=start, until=end, byweekday=workdays)
-    return days.count() - holidays
-
-def send_mail(invoice=[], reciList=[],subject=[],name=[],**kwargs):
-    outlook = win32.Dispatch('Outlook.Application')
-    for i in range(len(reciList)):
-        mail_item = outlook.CreateItem(0)  # 0: olMailItem
-        mail_item.Recipients.Add(reciList[i])
-        mail_item.Subject = subject
-        mail_item.BodyFormat = 2  # 2: Html format
-        mail_item.HTMLBody = '''
-                            Dear {0},\n\n
-
-                            Can you send me the pre-alert corresponding to following invoices. Thanks.\n\n
-
-                            {1}
-
-                            '''.format(name,invoice)
-
-        # mail_item.Attachments.Add('d:\doc\IT Info.xlsx')
-        mail_item.Send()
+def send_mail(invoice=[], addressee=[],cc=[],subject=[],name=[]):
+    olook = win32.Dispatch("outlook.Application")  # 固定写法
+    mail = olook.CreateItem(0)  # 固定写法
+    mail.To = addressee  # 收件人
+    mail.CC = cc  # 抄送人
+    mail.Subject = subject
+    #mail_item.BodyFormat = 2  # 2: Html format
+    mail.Body = '''Dear {0},\n\nCan you send me the pre-alert corresponding to following invoices. Thanks.\n\n{1}'''\
+        .format(name,invoice)
+    mail.Send()  # 发送
 
 if __name__ == '__main__':
     pythoncom.CoInitialize()
-    sea_mail = []
-    air_mail = []
-    sea_mail.append(eg.enterbox(msg='请输入海运预报预警的邮箱（多个邮箱请用空格分开）： ', title="Pre-alert tracking V1.0\t   作者：\
-    Henry Xue ",default=['heng.xue@volkswagen.com.cn'])) # yasin.ask@volkswagen.de yvonne.turovsky@volkswagen.de
-    air_mail.append(eg.enterbox(msg='请输入空运预报预警的邮箱（多个邮箱请用空格分开）： ', title="Pre-alert tracking V1.0\t   作者：\
-    Henry Xue ",default=['heng.xue@volkswagen.com.cn']))  # Kay.arrano-gonzalez@dhl.com','Chih-yun.wang@dhl.com
+    sea_mail_re = []
+    sea_mail_cc = []
+    air_mail_re = []
+    air_mail_cc = []
+    Collect_fields = ['发送邮箱','抄送邮箱']
+    temp_mail_sea = eg.multenterbox(msg='请输入海运预警的邮箱（多个邮箱请用分号隔开）：', title="Pre-alert tracking V1.0 beta 作者：\
+    Henry Xue ",fields= Collect_fields,values=['heng.xue@volkswagen.com.cn','heng.xue@volkswagen.com.cn']) # yasin.ask@volkswagen.de yvonne.turovsky@volkswagen.de
+    sea_mail_re = temp_mail_sea[0]
+    sea_mail_cc = temp_mail_sea[1]
+    temp_mail_air = eg.multenterbox(msg='请输入空运预警的邮箱（多个邮箱请用分号隔开）：', title="Pre-alert tracking V1.0 beta 作者：\
+    Henry Xue ",fields= Collect_fields,values=['heng.xue@volkswagen.com.cn','heng.xue@volkswagen.com.cn'])  # Kay.arrano-gonzalez@dhl.com','Chih-yun.wang@dhl.com
+    air_mail_re = temp_mail_air[0]
+    air_mail_cc = temp_mail_air[1]
     dirpath = eg.diropenbox(msg='请指定发票文件夹的位置： ', title="Pre-alert tracking V1.0\t   作者：Henry Xue ")
+    sea_limit = int(eg.enterbox(msg ='请输入海运预警天数（自然日）：',default=7))
+    air_limit = int(eg.enterbox(msg='请输入空运预警天数（自然日）：',default=5))
     path_filename = get_file_name(dirpath)
     inbound_result = []
     today = time.time()
     sea_invoice = []
     air_invoice = []
-    sea_limit = 7
-    air_limit = 3
-    sea_subject = 'Sea Per-alert notice'
-    air_subject = 'Air Per-alert notice'
+    sea_subject = 'Sea Per-alert notice  ' + str(dt.datetime.now())[0:10]
+    air_subject = 'Air Per-alert notice  ' + str(dt.datetime.now())[0:10]
     sea_name = 'All'
     air_name = 'All'
     inbound_result_int = []
@@ -116,15 +104,19 @@ if __name__ == '__main__':
     for i, j, k in zip(Sea_df['Invoice'], Sea_df['Date'], Sea_df['Method']):        #海运超过时限，则存到一个列表中
         Sea_date = dt.datetime.strptime(j, '%d.%m.%Y').date()
         i = int(i)
-        gap = workdays(Sea_date, dt.datetime.today())
-        if gap > sea_limit:
+        Sea_gap = rrule.rrule(rrule.DAILY, dtstart = Sea_date, until = dt.datetime.today()).count()     #计算自然日差
+        if Sea_gap > sea_limit:
             sea_invoice.append(i)
 
     for i, j, k in zip(Air_df['Invoice'], Air_df['Date'], Air_df['Method']):        #空运超过时限，则存到一个列表中
         Air_date = dt.datetime.strptime(j, '%d.%m.%Y').date()
         i = int(i)
-        gap = workdays(Air_date, dt.datetime.today())
-        if gap > air_limit:
+        Air_gap = rrule.rrule(rrule.DAILY, dtstart = Air_date, until = dt.datetime.today()).count()  #计算自然日差
+        if Air_gap > air_limit:
             air_invoice.append(i)
-    send_mail(sea_invoice,sea_mail,sea_subject,sea_name)        #发海运邮件
-    send_mail(air_invoice,air_mail,air_subject,air_name)        #发空运邮件
+
+    if eg.ynbox(msg='''海运有如下发票未能及时收到预报，是否需要发送邮件？\n\n{}'''.format(sea_invoice)):
+        send_mail(sea_invoice,sea_mail_re,sea_mail_cc,sea_subject,sea_name)        #发海运邮件
+
+    if eg.ynbox(msg='''空运有如下发票未能及时收到预报，是否需要发送邮件？\n\n{}'''.format(air_invoice)):
+        send_mail(air_invoice,air_mail_re,air_mail_cc,air_subject,air_name)        #发空运邮件
