@@ -54,7 +54,6 @@ def send_mail(invoice=[], addressee=[],cc=[],subject=[],name=[]):
     mail.To = addressee  # 收件人
     mail.CC = cc  # 抄送人
     mail.Subject = subject
-    #mail_item.BodyFormat = 2  # 2: Html format
     mail.Body = '''Dear {0},\n\nCan you send me the pre-alert corresponding to following invoices. Thanks.\n\n{1}'''\
         .format(name,invoice)
     mail.Send()  # 发送
@@ -66,12 +65,15 @@ if __name__ == '__main__':
     air_mail_re = []
     air_mail_cc = []
     Collect_fields = ['发送邮箱','抄送邮箱']
-    temp_mail_sea = eg.multenterbox(msg='请输入海运预警的邮箱（多个邮箱请用分号隔开）：', title="Pre-alert tracking V1.0 beta 作者：\
-    Henry Xue ",fields= Collect_fields,values=['heng.xue@volkswagen.com.cn','heng.xue@volkswagen.com.cn']) # yasin.ask@volkswagen.de yvonne.turovsky@volkswagen.de
+    temp_mail_sea = eg.multenterbox(msg='请输入海运预警的邮箱（多个邮箱请用分号隔开）：',title="Pre-alert tracking V1.0  作者：\
+    Henry Xue ",fields=Collect_fields,values=['yasin.ask@volkswagen.de;yvonne.turovsky@volkswagen.de',\
+                                               'Lingling.Bai@volkswagen.com.cn;Mei.Zheng@volkswagen.com.cn'])
     sea_mail_re = temp_mail_sea[0]
     sea_mail_cc = temp_mail_sea[1]
-    temp_mail_air = eg.multenterbox(msg='请输入空运预警的邮箱（多个邮箱请用分号隔开）：', title="Pre-alert tracking V1.0 beta 作者：\
-    Henry Xue ",fields= Collect_fields,values=['heng.xue@volkswagen.com.cn','heng.xue@volkswagen.com.cn'])  # Kay.arrano-gonzalez@dhl.com','Chih-yun.wang@dhl.com
+    temp_mail_air = eg.multenterbox(msg='请输入空运预警的邮箱（多个邮箱请用分号隔开）：',title="Pre-alert tracking V1.0  作者：\
+    Henry Xue ",fields=Collect_fields,values=['Vw.controltower-haj@dhl.com;Kay.arrano-gonzalez@dhl.com;\
+    sebastian.ulbricht@dhl.com;dhl-de-audi-muc@dhl.com;nicole.eberle@dhl.com;Dejan.Vlacic@dhl.com;jindan.li@dhl.com'\
+        ,'Lingling.Bai@volkswagen.com.cn;Mei.Zheng@volkswagen.com.cn'])
     air_mail_re = temp_mail_air[0]
     air_mail_cc = temp_mail_air[1]
     dirpath = eg.diropenbox(msg='请指定发票文件夹的位置： ', title="Pre-alert tracking V1.0\t   作者：Henry Xue ")
