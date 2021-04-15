@@ -44,7 +44,7 @@ End If
     content_item = Clipboard[1].split('\r')[0]
     content_SAP = overwrite_SAP(content_PO,content_item)
     content = content_fix + content_SAP
-    Me23n_file = open('../me23n.vbs', 'w')
+    Me23n_file = open('../ME23N/me23n.vbs', 'w')
     Me23n_file.write(content)
     Me23n_file.close()
     subp.call('cscript me23n.vbs')

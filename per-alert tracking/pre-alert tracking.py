@@ -65,12 +65,12 @@ if __name__ == '__main__':
     air_mail_re = []
     air_mail_cc = []
     Collect_fields = ['发送邮箱','抄送邮箱']
-    temp_mail_sea = eg.multenterbox(msg='请输入海运预警的邮箱（多个邮箱请用分号隔开）：',title="Pre-alert tracking V1.0  作者：\
+    temp_mail_sea = eg.multenterbox(msg='请输入海运预警的邮箱（多个邮箱请用分号隔开）：',title="Pre-alert tracking V1.0    作者：\
     Henry Xue ",fields=Collect_fields,values=['yasin.ask@volkswagen.de;yvonne.turovsky@volkswagen.de',\
                                                'Lingling.Bai@volkswagen.com.cn;Mei.Zheng@volkswagen.com.cn'])
     sea_mail_re = temp_mail_sea[0]
     sea_mail_cc = temp_mail_sea[1]
-    temp_mail_air = eg.multenterbox(msg='请输入空运预警的邮箱（多个邮箱请用分号隔开）：',title="Pre-alert tracking V1.0  作者：\
+    temp_mail_air = eg.multenterbox(msg='请输入空运预警的邮箱（多个邮箱请用分号隔开）：',title="Pre-alert tracking V1.0    作者：\
     Henry Xue ",fields=Collect_fields,values=['Vw.controltower-haj@dhl.com;Kay.arrano-gonzalez@dhl.com;\
     sebastian.ulbricht@dhl.com;dhl-de-audi-muc@dhl.com;nicole.eberle@dhl.com;Dejan.Vlacic@dhl.com;jindan.li@dhl.com'\
         ,'Lingling.Bai@volkswagen.com.cn;Mei.Zheng@volkswagen.com.cn'])
